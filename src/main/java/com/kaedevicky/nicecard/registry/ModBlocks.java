@@ -24,10 +24,6 @@ public class ModBlocks {
                     // 如果需要可以加 .requiresCorrectToolForDrops() 等
             ));
 
-    // 注册方块实体
-    public static final Supplier<BlockEntityType<GameTableBlockEntity>> GAME_TABLE_BE = BLOCK_ENTITIES.register("game_table",
-            () -> BlockEntityType.Builder.of(GameTableBlockEntity::new, GAME_TABLE_BLOCK.get()).build(null));
-
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
         BLOCK_ENTITIES.register(eventBus);

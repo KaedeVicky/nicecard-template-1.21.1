@@ -43,23 +43,7 @@ public class PacketHandler {
                 PacketBinderPage::handle       // 处理逻辑 (引用 PacketBinderPage 类里的静态 handle 方法)
         );
 
-        registrar.playToServer(
-                PacketTableAction.TYPE,         // 包类型
-                PacketTableAction.STREAM_CODEC, // 编解码器
-                PacketTableAction::handle       // 处理逻辑 (引用 PacketTableAction 类里的静态 handle 方法)
-        );
 
-        registrar.playToClient(
-                PacketOpenGameTable.TYPE,
-                PacketOpenGameTable.STREAM_CODEC,
-                PacketOpenGameTable::handle
-        );
-
-        registrar.playToServer(
-                PacketGameMove.TYPE,
-                PacketGameMove.STREAM_CODEC,
-                PacketGameMove::handle
-        );
 
     }
 }

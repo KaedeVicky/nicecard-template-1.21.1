@@ -1,6 +1,5 @@
 package com.kaedevicky.nicecard.block;
 
-import com.kaedevicky.nicecard.network.PacketOpenGameTable;
 import com.kaedevicky.nicecard.registry.ModBlocks;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -40,18 +39,11 @@ public class GameTableBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            // 发送数据包给玩家，通知他打开界面
-            PacketDistributor.sendToPlayer(serverPlayer, new PacketOpenGameTable(pos));
-        }
+
         return InteractionResult.SUCCESS;
     }
 
-    @Nullable
-    @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new GameTableBlockEntity(pos, state);
-    }
+
 
     // 确保方块模型能正常渲染（否则会隐形）
     @Override
@@ -59,11 +51,8 @@ public class GameTableBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
-    // 如果需要Tick更新游戏逻辑
-    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        if(level.isClientSide) return null; // 逻辑只在服务端运行
-        return createTickerHelper(blockEntityType, ModBlocks.GAME_TABLE_BE.get(), GameTableBlockEntity::tick);
+    public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+        return null;
     }
 }
