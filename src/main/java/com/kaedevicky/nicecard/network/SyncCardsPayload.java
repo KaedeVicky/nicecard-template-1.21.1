@@ -33,6 +33,9 @@ public record SyncCardsPayload(List<CardDefinition> cards) implements CustomPack
 
     public static void handleData(final SyncCardsPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
+            // 【修正】直接更新通用的 CardManager，而不是 ClientCardManager
+            // 这样 CardInstance.load() 里的 CardManager.INSTANCE.getCard() 就能在客户端工作了
+            NiceCard.LOGGER.info("CLIENT RECEIVED CARDS: " + payload.cards().size());
             ClientCardManager.INSTANCE.updateCards(payload.cards());
         });
     }

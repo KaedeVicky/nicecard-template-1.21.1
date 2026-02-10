@@ -58,12 +58,10 @@ public class CardInstance {
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("UUID", uuid);
-        // 保存 ID 字符串，例如 "nicecard:creeper"
-        // 这里的 ID 我们用 CardManager 里的 key 或者 textureLocation 都可以，
-        // 但最稳妥的是你在 CardDefinition 里存了一个 id 字段。
-        // 如果没有 id 字段，我们可以暂时用 textureLocation.toString() 代替，或者你在 CardDefinition 里加一个 id()
-        // 假设这里我们存的是 textureLocation 对应的字符串 (或者你需要给 CardDefinition 加一个 getId())
-        tag.putString("DefId", definition.textureLocation().toString()); // ⚠️注意：确保这个能唯一对应
+
+        // 【修正】使用 id() 而不是 textureLocation()
+        // 你的 CardDefinition 里的 id 字段 (如 "nicecard:creeper") 才是唯一的查找键
+        tag.putString("DefId", definition.id());
 
         tag.putInt("Cost", currentCost);
         tag.putInt("Atk", currentAttack);

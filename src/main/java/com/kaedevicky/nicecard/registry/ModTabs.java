@@ -7,11 +7,14 @@ import com.kaedevicky.nicecard.item.CardItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 public class ModTabs {
@@ -28,16 +31,30 @@ public class ModTabs {
                         output.accept(ModItems.PACK_NETHER.get());
                         output.accept(ModItems.PACK_END.get());
                         output.accept(ModItems.CARD_BINDER.get());
-                        output.accept(ModItems.GAME_TABLE_ITEM.get());
+                        // 确保 GAME_TABLE_ITEM 不为空再添加
+                        if (ModItems.GAME_TABLE_ITEM != null && ModItems.GAME_TABLE_ITEM.get() != null) {
+                            output.accept(ModItems.GAME_TABLE_ITEM.get());
+                        }
                         output.accept(ModItems.GAME_BINDER.get());
 
                         // 2. 动态添加卡牌
-                        // 创造模式栏是在客户端构建的，所以我们从 ClientCardManager 获取数据
                         Collection<CardDefinition> cards = ClientCardManager.INSTANCE.getCards();
 
-                        for (CardDefinition def : cards) {
-                            // 使用我们在 CardItem 里写的辅助方法创建 ItemStack
-                            output.accept(CardItem.createCard(def));
+                        // 【调试日志】
+                        NiceCard.LOGGER.info("ModTabs: Loading Creative Tab items. Card count: " + cards.size());
+
+                        if (!cards.isEmpty()) {
+                            List<CardDefinition> sortedCards = new ArrayList<>(cards);
+                            // 按 ID 排序，方便查找
+                            sortedCards.sort(Comparator.comparing(CardDefinition::id));
+
+                            for (CardDefinition def : sortedCards) {
+                                ItemStack stack = CardItem.createCard(def);
+                                output.accept(stack);
+                            }
+                        } else {
+                            // 如果是空的，我们可以加一个占位符，提示玩家数据未加载
+                            // 或者不做任何事
                         }
                     })
                     .build());

@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-// 1. 不再实现 MenuProvider
 public class GameTableBlockEntity extends BlockEntity {
 
     private UUID player1;
@@ -40,57 +39,53 @@ public class GameTableBlockEntity extends BlockEntity {
         super(ModBlocks.GAME_TABLE_BE.get(), pos, blockState);
     }
 
-    // --- 游戏逻辑 (保持不变) ---
     public void tryJoin(ServerPlayer player, int slot) {
         if (isGameStarted) return;
         if (!hasBinder(player)) {
-            player.sendSystemMessage(Component.literal("§c你需要携带一个 [卡组盒] 才能入座！"));
+            player.sendSystemMessage(Component.literal("§cYou need a [Game Binder] to join!"));
             return;
         }
         if (player.getUUID().equals(player1) || player.getUUID().equals(player2)) {
-            player.sendSystemMessage(Component.literal("§e你已经入座了。"));
+            player.sendSystemMessage(Component.literal("§eYou are already seated."));
             return;
         }
+
+        boolean updated = false;
         if (slot == 1 && player1 == null) {
             player1 = player.getUUID();
             player1Name = player.getGameProfile().getName();
-            syncData();
+            updated = true;
         } else if (slot == 2 && player2 == null) {
             player2 = player.getUUID();
             player2Name = player.getGameProfile().getName();
+            updated = true;
+        }
+
+        // 关键：只有数据真正改变了才同步，避免无效包
+        if (updated) {
             syncData();
         }
     }
 
-    public void tryStartGame(ServerPlayer requestPlayer) { // 参数其实没用到，或者是用来校验权限的
-        // 必须双方都已入座
+    public void tryStartGame(ServerPlayer requestPlayer) {
         if (player1 == null || player2 == null) return;
         if (isGameStarted) return;
 
         if (level instanceof ServerLevel serverLevel) {
-            // 1. 获取玩家实体
             ServerPlayer p1Entity = (ServerPlayer) serverLevel.getPlayerByUUID(player1);
             ServerPlayer p2Entity = (ServerPlayer) serverLevel.getPlayerByUUID(player2);
 
-            // 如果有人离线了，就不能开始
-            if (p1Entity == null || p2Entity == null) {
-                // 可以发个消息提示 "对方已离线"
-                return;
-            }
+            if (p1Entity == null || p2Entity == null) return;
 
             isGameStarted = true;
 
-            // 2. 初始化 GameData 里的玩家信息 (UUID, 名字)
+            // 初始化游戏数据
             gameData.player1 = new PlayerState(player1, player1Name);
             gameData.player2 = new PlayerState(player2, player2Name);
 
-            // 3. 【关键】调用 Controller 进行发牌
             GameController controller = new GameController(gameData);
-            // 这里会触发 buildDeck -> createTestDeck -> drawCard
             controller.initGame(p1Entity, p2Entity);
 
-            // 4. 【非常关键】同步数据到客户端！
-            // 如果不调用这个，客户端虽然游戏开始了，但不知道自己手牌里有东西
             syncData();
         }
     }
@@ -101,53 +96,41 @@ public class GameTableBlockEntity extends BlockEntity {
             ItemStack stack = inv.getItem(i);
             if (stack.getItem() == ModItems.GAME_BINDER.get()) return true;
         }
-        return false;
+        return player.getOffhandItem().getItem() == ModItems.GAME_BINDER.get();
     }
 
-    // --- 数据同步核心 (Server -> Client) ---
+    // --- 数据同步核心 ---
 
     public void syncData() {
-        setChanged(); // 标记脏数据，确保存储
-        if (level instanceof ServerLevel serverLevel) {
-            // 发送数据块更新包，这会触发 getUpdatePacket -> onDataPacket
-            serverLevel.getChunkSource().blockChanged(worldPosition);
+        setChanged(); // 标记需要保存到硬盘
+        if (level != null) {
+            // 发送更新包给所有在此区块加载范围内的玩家
+            // 3 = Block.UPDATE_ALL (更新客户端 + 通知邻居)
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
-    // 1. 服务端：决定发给客户端什么数据
     @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    // 2. 服务端：把数据写入 NBT (用于 getUpdatePacket)
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        // 当区块加载或 sendBlockUpdated 时调用
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;
     }
 
-    // 3. 客户端：收到包后怎么处理
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
-        // 调用 loadAdditional 读取 NBT
-        // 注意：在 1.21 中有时需要显式调用 handleUpdateTag，但 onDataPacket 是更底层的入口
+        // 客户端收到包后，立即读取
         super.onDataPacket(net, pkt, lookupProvider);
-        // 这一步非常关键：不用等到下次区块加载，立即读取包里的 tag 更新字段
-        // 如果没有这行，客户端可能只有在重进游戏时才会更新
         loadAdditional(pkt.getTag(), lookupProvider);
     }
 
-    // 4. 客户端：处理更新 Tag (备用，某些情况下会走这里)
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.handleUpdateTag(tag, lookupProvider);
-        loadAdditional(tag, lookupProvider);
-    }
-
-    // --- NBT 保存与读取 (保持不变) ---
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
@@ -186,7 +169,10 @@ public class GameTableBlockEntity extends BlockEntity {
         }
     }
 
+    // 【关键】Getter 方法 (供 Screen 实时读取状态)
+    public UUID getPlayer1() { return player1; }
     public String getPlayer1Name() { return player1Name; }
+    public UUID getPlayer2() { return player2; }
     public String getPlayer2Name() { return player2Name; }
 
     public static void tick(Level level, BlockPos pos, BlockState state, GameTableBlockEntity be) {

@@ -55,5 +55,11 @@ public class PacketHandler {
                 PacketOpenGameTable::handle
         );
 
+        registrar.playToServer(
+                PacketGameMove.TYPE,
+                PacketGameMove.STREAM_CODEC,
+                PacketGameMove::handle
+        );
+
     }
 }

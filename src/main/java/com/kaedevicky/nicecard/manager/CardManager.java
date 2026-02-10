@@ -103,4 +103,15 @@ public class CardManager extends SimpleJsonResourceReloadListener {
 
         return cards.get(loc);
     }
+
+    public void setCards(List<CardDefinition> newCards) {
+        this.cards.clear();
+        for (CardDefinition card : newCards) {
+            ResourceLocation id = ResourceLocation.tryParse(card.id());
+            if (id != null) {
+                this.cards.put(id, card);
+            }
+        }
+        LOGGER.info("Client CardManager updated with {} cards.", cards.size());
+    }
 }
