@@ -1,0 +1,13 @@
+{
+  "id": "nicecard:wither",
+  "name": "The Wither",
+  "rarity": "LEGENDARY",
+  "category": "NETHER",
+  "type": "MINION",
+  "texture": "nicecard:textures/card/art/wither.png",
+  "cost": 8,
+  "damage": 8,
+  "armor": 0,
+  "health": 4,
+  "description": "On Play: Deal 1 damage to ALL other minions. Inflicts Wither effect."
+}

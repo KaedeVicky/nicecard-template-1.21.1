@@ -1,0 +1,13 @@
+{
+  "itemGroup.nicecard": "Example Mod Tab",
+  "block.nicecard.example_block": "Example Block",
+  "item.nicecard.example_item": "Example Item",
+
+  "nicecard.configuration.title": "NiceCard Configs",
+  "nicecard.configuration.section.nicecard.common.toml": "NiceCard Configs",
+  "nicecard.configuration.section.nicecard.common.toml.title": "NiceCard Configs",
+  "nicecard.configuration.items": "Item List",
+  "nicecard.configuration.logDirtBlock": "Log Dirt Block",
+  "nicecard.configuration.magicNumberIntroduction": "Magic Number Text",
+  "nicecard.configuration.magicNumber": "Magic Number"
+}

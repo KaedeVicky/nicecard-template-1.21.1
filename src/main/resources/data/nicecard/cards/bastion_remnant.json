@@ -1,0 +1,13 @@
+{
+  "id": "nicecard:bastion_remnant",
+  "name": "Bastion Remnant",
+  "rarity": "EPIC",
+  "category": "NETHER",
+  "type": "TACTIC",
+  "texture": "nicecard:textures/card/art/bastion_remnant.png",
+  "cost": 4,
+  "damage": 0,
+  "armor": 0,
+  "health": 4,
+  "description": "Add two random Gold cards to your hand."
+}

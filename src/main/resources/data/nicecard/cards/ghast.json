@@ -1,0 +1,13 @@
+{
+  "id": "nicecard:ghast",
+  "name": "Ghast",
+  "rarity": "EPIC",
+  "category": "NETHER",
+  "type": "MINION",
+  "texture": "nicecard:textures/card/art/ghast.png",
+  "cost": 5,
+  "damage": 5,
+  "armor": 0,
+  "health": 4,
+  "description": "Flying. Return this card to your hand instead of dying (once per game)."
+}

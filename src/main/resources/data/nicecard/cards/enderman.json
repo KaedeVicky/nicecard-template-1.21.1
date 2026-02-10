@@ -1,0 +1,13 @@
+{
+  "id": "nicecard:enderman",
+  "name": "Enderman",
+  "rarity": "RARE",
+  "category": "END",
+  "type": "MINION",
+  "texture": "nicecard:textures/card/art/enderman.png",
+  "cost": 4,
+  "damage": 6,
+  "armor": 0,
+  "health": 4,
+  "description": "Dodge. 50% chance to avoid projectile damage."
+}
